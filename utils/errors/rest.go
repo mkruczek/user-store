@@ -1,6 +1,9 @@
 package errors
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type RestError struct {
 	Err    string `json:"err"`
@@ -21,10 +24,26 @@ func NewBadRequestError(msg string) *RestError {
 	}
 }
 
+func NewBadRequestErrorf(format string, v ...interface{}) *RestError {
+	return &RestError{
+		Err:    "bad request",
+		Status: http.StatusBadRequest,
+		Msg:    fmt.Sprintf(format, v...),
+	}
+}
+
 func NewInternalServerError(msg string) *RestError {
 	return &RestError{
 		Err:    "internal server error",
 		Status: http.StatusInternalServerError,
+		Msg:    msg,
+	}
+}
+
+func NewNotFoundError(msg string) *RestError {
+	return &RestError{
+		Err:    "not found",
+		Status: http.StatusNotFound,
 		Msg:    msg,
 	}
 }

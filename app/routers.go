@@ -12,7 +12,7 @@ func mapUrls(s *server) {
 	s.router.GET("/ping", lifecheck.Check) //not calling the function, only giving info what f need to be execution
 
 	s.router.POST("/user", cu.Create)
-	s.router.GET("/user/:id", cu.ById)
+	s.router.GET("/user/:id", cu.GetById)
 	s.router.GET("/user", cu.Search)
 	s.router.DELETE("/user/:id", cu.Delete)
 }
