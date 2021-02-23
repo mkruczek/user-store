@@ -35,7 +35,7 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, error) {
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
 		Email:       strings.TrimSpace(dto.Email),
-		CreatedDate: time.Now(),
+		CreatedDate: time.Now().UTC(),
 	}
 
 	err = s.repo.Save(&e)
