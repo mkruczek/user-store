@@ -10,8 +10,17 @@ import (
 	"time"
 )
 
+type DBUserProvider interface {
+	//Ping() *errors.RestError //(??)maybe add
+	Save(u *user.Entity) *errors.RestError
+	Update(u *user.Entity) *errors.RestError
+	GetByID(id uuid.UUID) (*user.Entity, *errors.RestError)
+	Search(values map[string]string) ([]*user.Entity, *errors.RestError)
+	Delete(id uuid.UUID) *errors.RestError
+}
+
 type Service struct {
-	repo      *userRepository.Repository
+	repo      DBUserProvider
 	validator *validators.Validator
 }
 
@@ -38,8 +47,8 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, error) {
 		CreatedDate: time.Now().UTC(),
 	}
 
-	err = s.repo.Save(&e)
-	if err != nil {
+	err = s.repo.Save(&e) //(??)why i need additional check with (*errors.RestError)(nil)
+	if err != nil && err != (*errors.RestError)(nil) {
 		return nil, err
 	}
 
@@ -53,7 +62,7 @@ func (s *Service) GetById(id string) (*user.DTO, *errors.RestError) {
 		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
 	}
 
-	e, getErr := s.repo.GetById(uid) //TODO improve error
+	e, getErr := s.repo.GetByID(uid) //TODO improve error
 	if getErr != nil {
 		return nil, getErr
 	}

@@ -5,7 +5,6 @@ const (
 )
 
 func StartApplication() {
-
 	s := newServer()
 	mapUrls(s)
 	s.start(port)

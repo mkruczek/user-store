@@ -47,3 +47,11 @@ func NewNotFoundError(msg string) *RestError {
 		Msg:    msg,
 	}
 }
+
+func NewNotImplementingYet(msg string) *RestError {
+	return &RestError{
+		Err:    "not implementing yet",
+		Status: http.StatusNotImplemented,
+		Msg:    msg,
+	}
+}
