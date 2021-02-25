@@ -18,7 +18,7 @@ func (r *RestError) Error() string {
 
 func NewBadRequestError(msg string) *RestError {
 	return &RestError{
-		Err:    "bad request",
+		Err:    "bad_request",
 		Status: http.StatusBadRequest,
 		Msg:    msg,
 	}
@@ -26,7 +26,7 @@ func NewBadRequestError(msg string) *RestError {
 
 func NewBadRequestErrorf(format string, v ...interface{}) *RestError {
 	return &RestError{
-		Err:    "bad request",
+		Err:    "bad_request",
 		Status: http.StatusBadRequest,
 		Msg:    fmt.Sprintf(format, v...),
 	}
@@ -34,7 +34,7 @@ func NewBadRequestErrorf(format string, v ...interface{}) *RestError {
 
 func NewInternalServerError(msg string) *RestError {
 	return &RestError{
-		Err:    "internal server error",
+		Err:    "internal_server_error",
 		Status: http.StatusInternalServerError,
 		Msg:    msg,
 	}
@@ -42,7 +42,7 @@ func NewInternalServerError(msg string) *RestError {
 
 func NewNotFoundError(msg string) *RestError {
 	return &RestError{
-		Err:    "not found",
+		Err:    "not_found",
 		Status: http.StatusNotFound,
 		Msg:    msg,
 	}
@@ -50,7 +50,7 @@ func NewNotFoundError(msg string) *RestError {
 
 func NewNotImplementingYet(msg string) *RestError {
 	return &RestError{
-		Err:    "not implementing yet",
+		Err:    "not_implementing_yet",
 		Status: http.StatusNotImplemented,
 		Msg:    msg,
 	}

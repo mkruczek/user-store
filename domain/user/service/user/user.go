@@ -48,7 +48,8 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, error) {
 	}
 
 	err = s.repo.Save(&e) //(??)why i need additional check with (*errors.RestError)(nil)
-	if err != nil && err != (*errors.RestError)(nil) {
+	//if err1 != nil && err1 != (*errors.RestError)(nil) {
+	if err != nil {
 		return nil, err
 	}
 

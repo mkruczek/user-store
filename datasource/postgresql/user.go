@@ -12,7 +12,7 @@ const ( //todo move to config
 	hostPort     = 5432
 	username     = "postgres"
 	password     = "password"
-	databaseName = "user"
+	databaseName = "users"
 )
 
 type UserDB struct {
@@ -20,9 +20,6 @@ type UserDB struct {
 }
 
 func NewUserDBConnection() *UserDB {
-
-	//pgConString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-	//	username, password, hostname, hostPort, databaseName)
 
 	pgConString := fmt.Sprintf("port=%d host=%s user=%s password=%s dbname=%s sslmode=disable",
 		hostPort, hostname, username, password, databaseName)
