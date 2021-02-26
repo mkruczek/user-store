@@ -96,10 +96,14 @@ func (r *Repository) CheckEmailExist(email string) (bool, *errors.RestError) {
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Query(email)
-	if err != nil {
+	var id uuid.UUID
+	row := stmt.QueryRow(email)
+	if err := row.Scan(&id); err != nil {
+		if strings.EqualFold("sql: no rows in result set", err.Error()) {
+			return false, nil
+		}
 		return false, errors.NewInternalServerError(err.Error())
 	}
 
-	return result.Next(), nil
+	return true, nil
 }
