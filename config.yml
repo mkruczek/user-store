@@ -1,0 +1,13 @@
+server:
+  port: 3012
+db:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "password"
+  timeout: 10000000000 #10 seconds
+  name: "users"
+  schema: "public"
+  migration:
+    run: false #need to be set on true only with new migration file
+    files: "../user-store/datasource/postgresql/migrations"
