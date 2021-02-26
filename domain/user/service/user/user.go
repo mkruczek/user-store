@@ -10,17 +10,8 @@ import (
 	"time"
 )
 
-type DBUserProvider interface {
-	//Ping() *errors.RestError //(??)maybe add
-	Save(u *user.Entity) *errors.RestError
-	Update(u *user.Entity) *errors.RestError
-	GetByID(id uuid.UUID) (*user.Entity, *errors.RestError)
-	Search(values map[string]string) ([]*user.Entity, *errors.RestError)
-	Delete(id uuid.UUID) *errors.RestError
-}
-
 type Service struct {
-	repo      DBUserProvider
+	repo      userRepository.DBUserProvider
 	validator *validators.Validator
 }
 
@@ -39,7 +30,7 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, error) {
 		return nil, err
 	}
 
-	e := user.Entity{
+	e := user.Model{
 		ID:          uuid.New(),
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
@@ -47,9 +38,8 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, error) {
 		CreatedDate: time.Now().UTC(),
 	}
 
-	err = s.repo.Save(&e) //(??)why i need additional check with (*errors.RestError)(nil)
-	//if err1 != nil && err1 != (*errors.RestError)(nil) {
-	if err != nil {
+	errSave := s.repo.Save(&e)
+	if errSave != nil {
 		return nil, err
 	}
 

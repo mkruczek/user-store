@@ -48,6 +48,14 @@ func NewNotFoundError(msg string) *RestError {
 	}
 }
 
+func NewNotFoundErrorf(format string, v ...interface{}) *RestError {
+	return &RestError{
+		Err:    "not_found",
+		Status: http.StatusNotFound,
+		Msg:    fmt.Sprintf(format, v...),
+	}
+}
+
 func NewNotImplementingYet(msg string) *RestError {
 	return &RestError{
 		Err:    "not_implementing_yet",

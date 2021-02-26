@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Entity struct {
+type Model struct {
 	ID          uuid.UUID
 	FirstName   string
 	LastName    string
@@ -20,7 +20,7 @@ type DTO struct {
 	CreatedDate int64  `json:"createdDate"`
 }
 
-func (e *Entity) ToDTO() *DTO {
+func (e *Model) ToDTO() *DTO {
 	return &DTO{
 		ID:          e.ID.String(),
 		FirstName:   e.FirstName,
