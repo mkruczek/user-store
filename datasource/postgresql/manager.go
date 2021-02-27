@@ -24,6 +24,7 @@ func DoMagicWithDB(cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	driver, err := pg.WithInstance(db, &pg.Config{"", cfg.DB.Name, cfg.DB.Schema, cfg.DB.Timeout})
 	if err != nil {

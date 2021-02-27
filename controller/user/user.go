@@ -2,18 +2,20 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mkruczek/user-store/config"
 	"github.com/mkruczek/user-store/domain/user"
 	userService "github.com/mkruczek/user-store/domain/user/service/user"
 	"github.com/mkruczek/user-store/utils/errors"
 	"net/http"
+	"strings"
 )
 
 type Controller struct {
 	userService *userService.Service
 }
 
-func NewUserController() *Controller {
-	return &Controller{userService: userService.NewUserService()}
+func NewUserController(cfg *config.Config) *Controller {
+	return &Controller{userService: userService.NewUserService(cfg)}
 }
 
 func (c *Controller) Create(g *gin.Context) {
@@ -26,14 +28,45 @@ func (c *Controller) Create(g *gin.Context) {
 
 	created, err := c.userService.CreateUser(newUser)
 	if err != nil {
-		g.JSON(http.StatusBadRequest, err) //TODO get httpStatus from err - refactor od error
+		g.JSON(http.StatusBadRequest, err) //TODO get httpStatus from err - refactor error
 		return
 	}
 
 	g.JSON(http.StatusCreated, created)
 }
 func (c *Controller) Search(g *gin.Context) {
-	g.String(http.StatusNotImplemented, "implement me!")
+	values := getSearchValues(g)
+
+	result, err := c.userService.Search(values)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, err) //TODO get httpStatus from err - refactor error
+		return
+	}
+
+	g.JSON(http.StatusOK, result)
+}
+
+func getSearchValues(g *gin.Context) map[string][]string {
+	values := make(map[string][]string)
+	ids := g.Query("id")
+	if ids != "" {
+		values["id"] = strings.Split(ids, ",")
+	}
+	firstNames := g.Query("first_name")
+	if firstNames != "" {
+		values["first_name"] = strings.Split(firstNames, ",")
+	}
+	lastNames := g.Query("last_name")
+	if lastNames != "" {
+		values["last_name"] = strings.Split(lastNames, ",")
+	}
+	emails := g.Query("email")
+	if emails != "" {
+		values["email"] = strings.Split(emails, ",")
+	}
+
+	//todo handle createDate == < >
+	return values
 }
 func (c *Controller) GetById(g *gin.Context) {
 
@@ -45,6 +78,10 @@ func (c *Controller) GetById(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, result)
+}
+
+func (c *Controller) Update(g *gin.Context) {
+	g.String(http.StatusNotImplemented, "implement me!")
 }
 
 func (c *Controller) Delete(g *gin.Context) {

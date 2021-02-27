@@ -4,25 +4,17 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/mkruczek/user-store/config"
 	"log"
-)
-
-const ( //todo move to config
-	hostname     = "localhost"
-	hostPort     = 5432
-	username     = "postgres"
-	password     = "password"
-	databaseName = "users"
 )
 
 type UserDB struct {
 	*sql.DB
 }
 
-func NewUserDBConnection() *UserDB {
-
+func NewUserDBConnection(cfg *config.Config) *UserDB {
 	pgConString := fmt.Sprintf("port=%d host=%s user=%s password=%s dbname=%s sslmode=disable",
-		hostPort, hostname, username, password, databaseName)
+		cfg.DB.Port, cfg.DB.Host, cfg.DB.User, cfg.DB.Password, cfg.DB.Name)
 
 	result, err := sql.Open("postgres", pgConString)
 	if err != nil {
@@ -33,6 +25,6 @@ func NewUserDBConnection() *UserDB {
 		log.Fatalf("couldn't ping the DB : %s", err.Error())
 	}
 
-	log.Printf("success connecting to db : %s", databaseName)
+	log.Printf("success connecting to db : %s", cfg.DB.Name)
 	return &UserDB{result}
 }

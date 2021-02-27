@@ -26,7 +26,7 @@ func Run() {
 
 	//create nad start webServer
 	s := newServer()
-	mapUrls(s)
+	mapUrls(s, cfg)
 	err = s.start(cfg)
 	if err != nil {
 		log.Fatalf("couldn't start server : %s", err.Error())
