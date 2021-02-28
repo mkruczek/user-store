@@ -2,7 +2,6 @@ package user
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/mkruczek/user-store/config"
 	"github.com/mkruczek/user-store/datasource/postgresql"
@@ -27,6 +26,7 @@ type dbUser struct {
 	lastName   string
 	email      string
 	createDate int64
+	updateDate int64
 }
 
 type Repository struct {
@@ -40,28 +40,37 @@ func NewUserRepository(cfg *config.Config) *Repository {
 }
 
 func (r *Repository) Save(u *user.Model) *errors.RestError {
-	stmt, err := r.db.Prepare(`INSERT INTO users (id, first_name, last_name, email, create_date) VALUES ($1, $2, $3, $4, $5);`)
+	stmt, err := r.db.Prepare(`INSERT INTO users (id, first_name, last_name, email, create_date, update_date) VALUES ($1, $2, $3, $4, $5, $6);`)
 	if err != nil {
 		return errors.NewInternalServerError(err.Error())
 	}
 	defer stmt.Close()
 
-	insertResult, err := stmt.Exec(u.ID, u.FirstName, u.LastName, u.Email, u.CreatedDate.UnixNano())
+	_, err = stmt.Exec(u.ID, u.FirstName, u.LastName, u.Email, u.CreatedDate.UnixNano(), u.UpdateDate.UnixNano())
 	if err != nil {
 		return errors.NewInternalServerError(err.Error())
 	}
-
-	fmt.Println(insertResult)
 
 	return nil
 }
 
 func (r *Repository) Update(u *user.Model) *errors.RestError {
-	return errors.NewNotImplementingYet("repository.user.Update")
+	stmt, err := r.db.Prepare(`UPDATE users SET first_name = $1, last_name=$2, email=$3, update_date = $4 WHERE id = $5;`)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(u.FirstName, u.LastName, u.Email, u.UpdateDate.UnixNano(), u.ID)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+
+	return nil
 }
 
 func (r *Repository) GetByID(id uuid.UUID) (*user.Model, *errors.RestError) {
-	stmt, err := r.db.Prepare(`SELECT id, first_name, last_name, email, create_date FROM users WHERE id=$1`)
+	stmt, err := r.db.Prepare(`SELECT id, first_name, last_name, email, create_date, update_date FROM users WHERE id=$1`)
 	if err != nil {
 		return nil, errors.NewInternalServerError(err.Error())
 	}
@@ -69,7 +78,7 @@ func (r *Repository) GetByID(id uuid.UUID) (*user.Model, *errors.RestError) {
 
 	dbu := dbUser{}
 	row := stmt.QueryRow(id)
-	if err := row.Scan(&dbu.id, &dbu.firstName, &dbu.lastName, &dbu.email, &dbu.createDate); err != nil {
+	if err := row.Scan(&dbu.id, &dbu.firstName, &dbu.lastName, &dbu.email, &dbu.createDate, &dbu.updateDate); err != nil {
 		if strings.EqualFold("sql: no rows in result set", err.Error()) {
 			return nil, errors.NewNotFoundErrorf("couldn't find user with id : %s", id.String())
 		}
@@ -80,7 +89,6 @@ func (r *Repository) GetByID(id uuid.UUID) (*user.Model, *errors.RestError) {
 }
 
 func (r *Repository) Search(values map[string][]string) ([]*user.Model, *errors.RestError) {
-
 	sqlQuery := prepareQuery(values)
 	stmt, err := r.db.Prepare(sqlQuery)
 	if err != nil {
@@ -95,7 +103,7 @@ func (r *Repository) Search(values map[string][]string) ([]*user.Model, *errors.
 	}
 	for rows.Next() {
 		dbu := dbUser{}
-		if err := rows.Scan(&dbu.id, &dbu.firstName, &dbu.lastName, &dbu.email, &dbu.createDate); err != nil {
+		if err := rows.Scan(&dbu.id, &dbu.firstName, &dbu.lastName, &dbu.email, &dbu.createDate, &dbu.updateDate); err != nil {
 			return nil, errors.NewInternalServerError(err.Error())
 		}
 		result = append(result, dbu.toModel())
@@ -128,19 +136,17 @@ func (r *Repository) CheckEmailExist(email string) (bool, *errors.RestError) {
 }
 
 func prepareQuery(values map[string][]string) string {
-	sqlQuery := `SELECT id,first_name, last_name, email, create_date FROM users WHERE `
+	sqlQuery := `SELECT id,first_name, last_name, email, create_date, update_date FROM users WHERE `
 	for k, s := range values {
 		for i, v := range s {
 			sqlQuery += k + "="
 			sqlQuery += "'" + v + "'"
-			if i < len(s) {
+			if i < len(s)-1 {
 				sqlQuery += " OR "
 			}
 		}
-		sqlQuery = sqlQuery[:len(sqlQuery)-4]
 		sqlQuery += " AND "
 	}
-
 	sqlQuery = sqlQuery[:len(sqlQuery)-5]
 
 	return sqlQuery
@@ -153,5 +159,6 @@ func (d *dbUser) toModel() *user.Model {
 		LastName:    d.lastName,
 		Email:       d.email,
 		CreatedDate: time.Unix(0, d.createDate),
+		UpdateDate:  time.Unix(0, d.updateDate),
 	}
 }

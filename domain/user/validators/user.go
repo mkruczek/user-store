@@ -19,21 +19,44 @@ func NewUserValidator(repo userRepository.DBUserProvider) *Validator {
 	return &Validator{repo: repo}
 }
 
-func (u *Validator) User(model *user.DTO) *errors.RestError {
-
-	if email := validateEmailStruct(model.Email); !email {
-		return errors.NewBadRequestError("invalid email")
+func (u *Validator) CreateUser(dto *user.DTO) []errors.RestError {
+	var result []errors.RestError
+	err := u.validateEmail(dto.Email, &result)
+	if err != nil {
+		result = append(result, *err)
+		return result
 	}
-	if exist, err := u.repo.CheckEmailExist(model.Email); err != nil {
+
+	return result
+}
+
+func (u *Validator) UpdateUser(dto *user.UpdateDTO) []errors.RestError {
+	var result []errors.RestError
+
+	if dto.Email != nil {
+		err := u.validateEmail(*dto.Email, &result)
+		if err != nil {
+			result = append(result, *err)
+			return result
+		}
+	}
+
+	return result
+}
+
+func (u *Validator) validateEmail(email string, result *[]errors.RestError) *errors.RestError {
+
+	if isOk := func(s string) bool {
+		email = strings.TrimSpace(email)
+		return emailRegex.MatchString(email)
+	}(email); !isOk {
+		*result = append(*result, *errors.NewBadRequestError("invalid email"))
+	}
+	if exist, err := u.repo.CheckEmailExist(email); err != nil {
 		return err
 	} else if exist {
-		return errors.NewBadRequestError(fmt.Sprintf("email [%s] already exist", model.Email))
+		*result = append(*result, *errors.NewBadRequestError(fmt.Sprintf("email [%s] already exist", email)))
 	}
 
 	return nil
-}
-
-func validateEmailStruct(email string) bool {
-	email = strings.TrimSpace(email)
-	return emailRegex.MatchString(email)
 }

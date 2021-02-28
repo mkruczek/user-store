@@ -28,6 +28,7 @@ type Config struct {
 		Schema    string        `yaml:"schema"`
 		Migration struct {
 			Run   bool   `yaml:"run"`
+			Steps int    `yaml:"steps"`
 			Files string `yaml:"files"`
 		} `yaml:"migration"`
 	} `yaml:"db"`

@@ -10,4 +10,5 @@ db:
   schema: "public"
   migration:
     run: false #need to be set on true only with new migration file
+    steps: 0 #number of files to call - negative if we go back
     files: "../user-store/datasource/postgresql/migrations"

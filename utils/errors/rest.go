@@ -6,12 +6,12 @@ import (
 )
 
 type RestError struct {
-	Err    string `json:"err"`
-	Status int    `json:"status "`
-	Msg    string `json:"msg"`
+	Err     string   `json:"err"`
+	Status  int      `json:"status "`
+	Msg     string   `json:"msg"`
+	Content []string `json:"content,omitempty"`
 }
 
-//TODO
 func (r *RestError) Error() string {
 	return "error"
 }
@@ -21,6 +21,21 @@ func NewBadRequestError(msg string) *RestError {
 		Err:    "bad_request",
 		Status: http.StatusBadRequest,
 		Msg:    msg,
+	}
+}
+
+func NewBadRequestErrorValidationList(errs []RestError) *RestError {
+
+	validErrors := make([]string, len(errs))
+	for i, e := range errs {
+		validErrors[i] = e.Msg
+	}
+
+	return &RestError{
+		Err:     "bad_request",
+		Status:  http.StatusBadRequest,
+		Msg:     "validation fail",
+		Content: validErrors,
 	}
 }
 

@@ -12,7 +12,6 @@ import (
 )
 
 func DoMagicWithDB(cfg *config.Config) error {
-
 	if !cfg.DB.Migration.Run {
 		return nil
 	}
@@ -40,7 +39,7 @@ func DoMagicWithDB(cfg *config.Config) error {
 		return err
 	}
 
-	err = m.Steps(1) //number of files to call
+	err = m.Steps(cfg.DB.Migration.Steps)
 	if err != nil {
 		return err
 	}
