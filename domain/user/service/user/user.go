@@ -50,9 +50,9 @@ func (s *Service) Create(dto user.DTO) (*user.DTO, *errors.RestError) {
 
 func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
 
-	uid, err := uuid.Parse(id)
+	uid, err := parseID(id)
 	if err != nil {
-		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+		return nil, err
 	}
 
 	oldUser, getErr := s.repo.GetByID(uid)
@@ -76,10 +76,9 @@ func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.DTO, *erro
 }
 
 func (s *Service) FullUpdate(id string, dto user.DTO) (*user.DTO, *errors.RestError) {
-
-	uid, err := uuid.Parse(id)
+	uid, err := parseID(id)
 	if err != nil {
-		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+		return nil, err
 	}
 
 	oldUser, getErr := s.repo.GetByID(uid)
@@ -109,10 +108,18 @@ func (s *Service) FullUpdate(id string, dto user.DTO) (*user.DTO, *errors.RestEr
 	return e.ToDTO(), nil
 }
 
-func (s *Service) GetById(id string) (*user.DTO, *errors.RestError) {
+func parseID(id string) (*uuid.UUID, *errors.RestError) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+	}
+	return &uid, nil
+}
+
+func (s *Service) GetById(id string) (*user.DTO, *errors.RestError) {
+	uid, err := parseID(id)
+	if err != nil {
+		return nil, err
 	}
 
 	e, getErr := s.repo.GetByID(uid)
@@ -136,9 +143,9 @@ func (s *Service) Search(values map[string][]string) ([]*user.DTO, *errors.RestE
 }
 
 func (s *Service) Delete(id string) *errors.RestError {
-	uid, err := uuid.Parse(id)
+	uid, err := parseID(id)
 	if err != nil {
-		return errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+		return err
 	}
 
 	delErr := s.repo.Delete(uid)

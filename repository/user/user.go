@@ -14,9 +14,9 @@ import (
 type DBUserProvider interface {
 	Save(u *user.Model) *errors.RestError
 	Update(u *user.Model) *errors.RestError
-	GetByID(id uuid.UUID) (*user.Model, *errors.RestError)
+	GetByID(id *uuid.UUID) (*user.Model, *errors.RestError)
 	Search(values map[string][]string) ([]*user.Model, *errors.RestError)
-	Delete(id uuid.UUID) *errors.RestError
+	Delete(id *uuid.UUID) *errors.RestError
 	CheckEmailExist(email string) (bool, *errors.RestError)
 }
 
@@ -69,7 +69,7 @@ func (r *Repository) Update(u *user.Model) *errors.RestError {
 	return nil
 }
 
-func (r *Repository) GetByID(id uuid.UUID) (*user.Model, *errors.RestError) {
+func (r *Repository) GetByID(id *uuid.UUID) (*user.Model, *errors.RestError) {
 	stmt, err := r.db.Prepare(`SELECT id, first_name, last_name, email, create_date, update_date FROM users WHERE id=$1`)
 	if err != nil {
 		return nil, errors.NewInternalServerError(err.Error())
@@ -112,7 +112,7 @@ func (r *Repository) Search(values map[string][]string) ([]*user.Model, *errors.
 	return result, nil
 }
 
-func (r *Repository) Delete(id uuid.UUID) *errors.RestError {
+func (r *Repository) Delete(id *uuid.UUID) *errors.RestError {
 	stmt, err := r.db.Prepare(`DELETE FROM users WHERE id=$1`)
 	if err != nil {
 		return errors.NewInternalServerError(err.Error())
