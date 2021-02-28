@@ -48,7 +48,7 @@ func (s *Service) Create(dto user.DTO) (*user.DTO, *errors.RestError) {
 	return e.ToDTO(), nil
 }
 
-func (s *Service) Update(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
+func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -68,6 +68,40 @@ func (s *Service) Update(id string, dto user.UpdateDTO) (*user.DTO, *errors.Rest
 	e := updateUserBody(oldUser, dto)
 
 	errUpdate := s.repo.Update(e)
+	if errUpdate != nil {
+		return nil, errUpdate
+	}
+
+	return e.ToDTO(), nil
+}
+
+func (s *Service) FullUpdate(id string, dto user.DTO) (*user.DTO, *errors.RestError) {
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+	}
+
+	oldUser, getErr := s.repo.GetByID(uid)
+	if getErr != nil {
+		return nil, getErr
+	}
+
+	errs := s.validator.CreateUser(&dto) //consider other validation for full update
+	if len(errs) > 0 {
+		return nil, errors.NewBadRequestErrorValidationList(errs)
+	}
+
+	e := user.Model{
+		ID:          oldUser.ID,
+		FirstName:   dto.FirstName,
+		LastName:    dto.LastName,
+		Email:       dto.Email,
+		CreatedDate: oldUser.CreatedDate,
+		UpdateDate:  time.Now().UTC(),
+	}
+
+	errUpdate := s.repo.Update(&e)
 	if errUpdate != nil {
 		return nil, errUpdate
 	}

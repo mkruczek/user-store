@@ -35,7 +35,7 @@ func (c *Controller) Create(g *gin.Context) {
 	g.JSON(http.StatusCreated, created)
 }
 
-func (c *Controller) Update(g *gin.Context) {
+func (c *Controller) PartialUpdate(g *gin.Context) {
 	var newValue user.UpdateDTO
 	if err := g.ShouldBindJSON(&newValue); err != nil {
 		g.JSON(http.StatusBadRequest, errors.NewBadRequestError(err.Error()))
@@ -43,7 +43,24 @@ func (c *Controller) Update(g *gin.Context) {
 	}
 
 	id := g.Param("id")
-	updated, err := c.userService.Update(id, newValue)
+	updated, err := c.userService.PartialUpdate(id, newValue)
+	if err != nil {
+		g.JSON(err.Status, err)
+		return
+	}
+
+	g.JSON(http.StatusCreated, updated)
+}
+
+func (c *Controller) FullUpdate(g *gin.Context) {
+	var newValue user.DTO
+	if err := g.ShouldBindJSON(&newValue); err != nil {
+		g.JSON(http.StatusBadRequest, errors.NewBadRequestError(err.Error()))
+		return
+	}
+
+	id := g.Param("id")
+	updated, err := c.userService.FullUpdate(id, newValue)
 	if err != nil {
 		g.JSON(err.Status, err)
 		return
