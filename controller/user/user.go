@@ -26,7 +26,7 @@ func (c *Controller) Create(g *gin.Context) {
 		return
 	}
 
-	created, err := c.userService.CreateUser(newUser)
+	created, err := c.userService.Create(newUser)
 	if err != nil {
 		g.JSON(err.Status, err)
 		return
@@ -43,7 +43,7 @@ func (c *Controller) Update(g *gin.Context) {
 	}
 
 	id := g.Param("id")
-	updated, err := c.userService.UpdateUser(id, newValue)
+	updated, err := c.userService.Update(id, newValue)
 	if err != nil {
 		g.JSON(err.Status, err)
 		return
@@ -76,7 +76,14 @@ func (c *Controller) GetById(g *gin.Context) {
 }
 
 func (c *Controller) Delete(g *gin.Context) {
-	g.String(http.StatusNotImplemented, "implement me!")
+	id := g.Param("id")
+	err := c.userService.Delete(id)
+	if err != nil {
+		g.JSON(err.Status, err)
+		return
+	}
+
+	g.Status(http.StatusOK)
 }
 
 func getSearchValues(g *gin.Context) map[string][]string {

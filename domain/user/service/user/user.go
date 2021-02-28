@@ -24,7 +24,7 @@ func NewUserService(cfg *config.Config) *Service {
 	}
 }
 
-func (s *Service) CreateUser(dto user.DTO) (*user.DTO, *errors.RestError) {
+func (s *Service) Create(dto user.DTO) (*user.DTO, *errors.RestError) {
 
 	errs := s.validator.CreateUser(&dto)
 	if len(errs) > 0 {
@@ -48,7 +48,7 @@ func (s *Service) CreateUser(dto user.DTO) (*user.DTO, *errors.RestError) {
 	return e.ToDTO(), nil
 }
 
-func (s *Service) UpdateUser(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
+func (s *Service) Update(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -76,7 +76,6 @@ func (s *Service) UpdateUser(id string, dto user.UpdateDTO) (*user.DTO, *errors.
 }
 
 func (s *Service) GetById(id string) (*user.DTO, *errors.RestError) {
-
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
@@ -100,6 +99,20 @@ func (s *Service) Search(values map[string][]string) ([]*user.DTO, *errors.RestE
 		result[i] = m.ToDTO()
 	}
 	return result, nil
+}
+
+func (s *Service) Delete(id string) *errors.RestError {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+	}
+
+	delErr := s.repo.Delete(uid)
+	if delErr != nil {
+		return delErr
+	}
+
+	return nil
 }
 
 func updateUserBody(old *user.Model, dto user.UpdateDTO) *user.Model {

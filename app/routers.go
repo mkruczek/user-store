@@ -15,6 +15,6 @@ func mapUrls(s *server, cfg *config.Config) {
 	s.router.POST("/user", cu.Create)
 	s.router.GET("/user/:id", cu.GetById)
 	s.router.GET("/user", cu.Search)
-	s.router.PATCH("/user/:id", cu.Update)
+	s.router.PATCH("/user/:id", cu.Update) //todo add full update [PUT]
 	s.router.DELETE("/user/:id", cu.Delete)
 }

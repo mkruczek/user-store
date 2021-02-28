@@ -113,7 +113,18 @@ func (r *Repository) Search(values map[string][]string) ([]*user.Model, *errors.
 }
 
 func (r *Repository) Delete(id uuid.UUID) *errors.RestError {
-	return errors.NewNotImplementingYet("repository.user.Delete")
+	stmt, err := r.db.Prepare(`DELETE FROM users WHERE id=$1`)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+
+	return nil
 }
 
 func (r *Repository) CheckEmailExist(email string) (bool, *errors.RestError) {
