@@ -24,8 +24,7 @@ func NewUserService(cfg *config.Config) *Service {
 	}
 }
 
-func (s *Service) Create(dto user.DTO) (*user.DTO, *errors.RestError) {
-
+func (s *Service) Create(dto user.PrivateView) (*user.PrivateView, *errors.RestError) {
 	errs := s.validator.CreateUser(&dto)
 	if len(errs) > 0 {
 		return nil, errors.NewBadRequestErrorValidationList(errs)
@@ -45,11 +44,13 @@ func (s *Service) Create(dto user.DTO) (*user.DTO, *errors.RestError) {
 		return nil, errSave
 	}
 
-	return e.ToDTO(), nil
+	var result user.PrivateView
+	result.FromModel(&e)
+
+	return &result, nil
 }
 
-func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.DTO, *errors.RestError) {
-
+func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.PrivateView, *errors.RestError) {
 	uid, err := parseID(id)
 	if err != nil {
 		return nil, err
@@ -67,15 +68,13 @@ func (s *Service) PartialUpdate(id string, dto user.UpdateDTO) (*user.DTO, *erro
 
 	e := updateUserBody(oldUser, dto)
 
-	errUpdate := s.repo.Update(e)
-	if errUpdate != nil {
-		return nil, errUpdate
-	}
+	var result user.PrivateView
+	result.FromModel(e)
 
-	return e.ToDTO(), nil
+	return &result, nil
 }
 
-func (s *Service) FullUpdate(id string, dto user.DTO) (*user.DTO, *errors.RestError) {
+func (s *Service) FullUpdate(id string, dto user.PrivateView) (*user.PrivateView, *errors.RestError) {
 	uid, err := parseID(id)
 	if err != nil {
 		return nil, err
@@ -105,39 +104,35 @@ func (s *Service) FullUpdate(id string, dto user.DTO) (*user.DTO, *errors.RestEr
 		return nil, errUpdate
 	}
 
-	return e.ToDTO(), nil
+	var result user.PrivateView
+	result.FromModel(&e)
+
+	return &result, nil
 }
 
-func parseID(id string) (*uuid.UUID, *errors.RestError) {
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
-	}
-	return &uid, nil
-}
-
-func (s *Service) GetById(id string) (*user.DTO, *errors.RestError) {
+func (s *Service) GetById(isPublic bool, id string) (user.View, *errors.RestError) {
 	uid, err := parseID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	e, getErr := s.repo.GetByID(uid)
+	m, getErr := s.repo.GetByID(uid)
 	if getErr != nil {
 		return nil, getErr
 	}
-	return e.ToDTO(), nil
+
+	return m.ToView(isPublic), nil
 }
 
-func (s *Service) Search(values map[string][]string) ([]*user.DTO, *errors.RestError) {
+func (s *Service) Search(isPublic bool, values map[string][]string) ([]user.View, *errors.RestError) {
 	models, err := s.repo.Search(values)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]*user.DTO, len(models))
+	result := make([]user.View, len(models))
 	for i, m := range models {
-		result[i] = m.ToDTO()
+		result[i] = m.ToView(isPublic)
 	}
 	return result, nil
 }
@@ -148,12 +143,19 @@ func (s *Service) Delete(id string) *errors.RestError {
 		return err
 	}
 
-	delErr := s.repo.Delete(uid)
-	if delErr != nil {
+	if delErr := s.repo.Delete(uid); delErr != nil {
 		return delErr
 	}
 
 	return nil
+}
+
+func parseID(id string) (*uuid.UUID, *errors.RestError) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.NewBadRequestErrorf("couldn't parse id : %s", id)
+	}
+	return &uid, nil
 }
 
 func updateUserBody(old *user.Model, dto user.UpdateDTO) *user.Model {

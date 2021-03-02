@@ -20,7 +20,7 @@ func NewUserController(cfg *config.Config) *Controller {
 
 func (c *Controller) Create(g *gin.Context) {
 
-	var newUser user.DTO
+	var newUser user.PrivateView
 	if err := g.ShouldBindJSON(&newUser); err != nil {
 		g.JSON(http.StatusBadRequest, errors.NewBadRequestError(err.Error()))
 		return
@@ -53,7 +53,7 @@ func (c *Controller) PartialUpdate(g *gin.Context) {
 }
 
 func (c *Controller) FullUpdate(g *gin.Context) {
-	var newValue user.DTO
+	var newValue user.PrivateView
 	if err := g.ShouldBindJSON(&newValue); err != nil {
 		g.JSON(http.StatusBadRequest, errors.NewBadRequestError(err.Error()))
 		return
@@ -72,7 +72,7 @@ func (c *Controller) FullUpdate(g *gin.Context) {
 func (c *Controller) Search(g *gin.Context) {
 	values := getSearchValues(g)
 
-	result, err := c.userService.Search(values)
+	result, err := c.userService.Search(g.GetHeader("X-Public") == "true", values)
 	if err != nil {
 		g.JSON(err.Status, err)
 		return
@@ -83,7 +83,7 @@ func (c *Controller) Search(g *gin.Context) {
 
 func (c *Controller) GetById(g *gin.Context) {
 	id := g.Param("id")
-	result, err := c.userService.GetById(id)
+	result, err := c.userService.GetById(g.GetHeader("X-Public") == "true", id)
 	if err != nil {
 		g.JSON(err.Status, err)
 		return
@@ -100,7 +100,7 @@ func (c *Controller) Delete(g *gin.Context) {
 		return
 	}
 
-	g.Status(http.StatusOK)
+	g.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 }
 
 func getSearchValues(g *gin.Context) map[string][]string {

@@ -101,6 +101,7 @@ func (r *Repository) Search(values map[string][]string) ([]*user.Model, *errors.
 	if rows, err = stmt.Query(); err != nil {
 		return nil, errors.NewInternalServerError(err.Error())
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dbu := dbUser{}
 		if err := rows.Scan(&dbu.id, &dbu.firstName, &dbu.lastName, &dbu.email, &dbu.createDate, &dbu.updateDate); err != nil {

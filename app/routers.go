@@ -16,6 +16,6 @@ func mapUrls(s *server, cfg *config.Config) {
 	s.router.GET("/user/:id", cu.GetById)
 	s.router.GET("/user", cu.Search)
 	s.router.PATCH("/user/:id", cu.PartialUpdate)
-	s.router.PUT("/user/:id", cu.FullUpdate) //todo only for admin
+	s.router.PUT("/admin/user/:id", cu.FullUpdate) //todo secure
 	s.router.DELETE("/user/:id", cu.Delete)
 }

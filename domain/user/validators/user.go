@@ -19,7 +19,7 @@ func NewUserValidator(repo userRepository.DBUserProvider) *Validator {
 	return &Validator{repo: repo}
 }
 
-func (u *Validator) CreateUser(dto *user.DTO) []errors.RestError {
+func (u *Validator) CreateUser(dto *user.PrivateView) []errors.RestError {
 	var result []errors.RestError
 	err := u.validateEmail(dto.Email, &result)
 	if err != nil {
