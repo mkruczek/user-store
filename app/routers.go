@@ -8,7 +8,7 @@ import (
 
 func mapUrls(s *server, cfg *config.Config) {
 
-	cu := user.NewUserController(cfg)
+	cu := user.NewUserController(cfg, s.LOG)
 
 	s.router.GET("/ping", lifecheck.Check)
 

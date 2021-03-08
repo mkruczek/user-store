@@ -6,32 +6,39 @@ import (
 	"github.com/mkruczek/user-store/domain/user"
 	userService "github.com/mkruczek/user-store/domain/user/service/user"
 	"github.com/mkruczek/user-store/utils/errors"
+	"github.com/mkruczek/user-store/utils/logger"
 	"net/http"
 	"strings"
 )
 
 type Controller struct {
 	userService *userService.Service
+	LOG         logger.Logger
 }
 
-func NewUserController(cfg *config.Config) *Controller {
-	return &Controller{userService: userService.NewUserService(cfg)}
+func NewUserController(cfg *config.Config, log logger.Logger) *Controller {
+	return &Controller{
+		userService: userService.NewUserService(cfg),
+		LOG:         log,
+	}
 }
 
 func (c *Controller) Create(g *gin.Context) {
 
 	var newUser user.PrivateView
 	if err := g.ShouldBindJSON(&newUser); err != nil {
+		c.LOG.Warnf("problem with parsing request : %s", err.Error())
 		g.JSON(http.StatusBadRequest, errors.NewBadRequestError(err.Error()))
 		return
 	}
 
 	created, err := c.userService.Create(newUser)
 	if err != nil {
+		c.LOG.Warnf("problem during created new User : %v", err)
 		g.JSON(err.Status, err)
 		return
 	}
-
+	c.LOG.Infof("creating new user : %v", created)
 	g.JSON(http.StatusCreated, created)
 }
 

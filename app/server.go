@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mkruczek/user-store/config"
+	"github.com/mkruczek/user-store/utils/logger"
 )
 
 type server struct {
 	router *gin.Engine
+	LOG    logger.Logger
 }
 
-func newServer() *server {
+func newServer(LOG logger.Logger) *server {
 	return &server{
 		router: gin.Default(),
+		LOG:    LOG,
 	}
 }
 

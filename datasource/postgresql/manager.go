@@ -9,10 +9,12 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/mkruczek/user-store/config"
+	"github.com/mkruczek/user-store/utils/logger"
 )
 
-func DoMagicWithDB(cfg *config.Config) error {
+func DoMagicWithDB(cfg *config.Config, LOG logger.Logger) error {
 	if !cfg.DB.Migration.Run {
+		LOG.Infof("skip DB migration")
 		return nil
 	}
 

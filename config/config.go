@@ -5,6 +5,8 @@ package config
 import (
 	"flag"
 	"fmt"
+	"go.uber.org/zap/zapcore"
+	"log"
 	"os"
 	"time"
 
@@ -13,8 +15,30 @@ import (
 
 const defaultConfigPath = "../user-store/config.yml"
 
+func GetApplicationConfig() *Config {
+	cfgPath, err := parseFlags()
+	if err != nil {
+		log.Fatalf("couldn't load config path : %s", err.Error())
+	}
+	cfg, err := newConfig(cfgPath)
+	if err != nil {
+		log.Fatalf("couldn't create config for application : %s", err.Error())
+	}
+	return cfg
+}
+
 // Config struct for service config
 type Config struct {
+	Logging struct {
+		Level         zapcore.Level `yaml:"level"`
+		Encoding      string        `yaml:"encoding"`
+		OutputPaths   []string      `yaml:"outputPaths"`
+		EncoderConfig struct {
+			MessageKey string `yaml:"messageKey"`
+			LevelKey   string `yaml:"levelKey"`
+			TimeKey    string `yaml:"timeKey"`
+		} `yaml:"encoderConfig"`
+	} `yaml:"logging"`
 	Server struct {
 		Port string `yaml:"port"`
 	} `yaml:"server"`
@@ -34,8 +58,8 @@ type Config struct {
 	} `yaml:"db"`
 }
 
-// NewConfig returns a new decoded Config struct
-func NewConfig(configPath string) (*Config, error) {
+// newConfig returns a new decoded Config struct
+func newConfig(configPath string) (*Config, error) {
 	// Create config structure
 	config := &Config{}
 
@@ -56,9 +80,9 @@ func NewConfig(configPath string) (*Config, error) {
 	return config, nil
 }
 
-// ValidateConfigPath just makes sure, that the path provided is a file,
+// validateConfigPath just makes sure, that the path provided is a file,
 // that can be read
-func ValidateConfigPath(path string) error {
+func validateConfigPath(path string) error {
 	s, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -69,9 +93,9 @@ func ValidateConfigPath(path string) error {
 	return nil
 }
 
-// ParseFlags will create and parse the CLI flags
+// parseFlags will create and parse the CLI flags
 // and return the path to be used elsewhere
-func ParseFlags() (string, error) {
+func parseFlags() (string, error) {
 	// String that contains the configured configuration path
 	var configPath string
 
@@ -83,7 +107,7 @@ func ParseFlags() (string, error) {
 	flag.Parse()
 
 	// Validate the path first
-	if err := ValidateConfigPath(configPath); err != nil {
+	if err := validateConfigPath(configPath); err != nil {
 		return "", err
 	}
 

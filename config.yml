@@ -1,3 +1,11 @@
+logging:
+  level: "debug"
+  encoding: "json"
+  outputPaths: [ "stdout" ]
+  encoderConfig:
+    messageKey: "msg"
+    levelKey: "level"
+    timeKey: "timestemp"
 server:
   port: 3012
 db:
